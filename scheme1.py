@@ -1,5 +1,6 @@
 import random
 from Crypto.PublicKey import RSA
+from Crypto import Random
 
 
 class TrustedPublicDirectory:
@@ -43,5 +44,5 @@ class Z:
 z = Z(40)
 sign = z[13].sign(12379587193847134, 0)
 tpd = z.get_trusted_public_directory()
-print(tpd.verify(12379587193847134, sign))
-print(z.open_member(12379587193847134, sign))
+assert tpd.verify(12379587193847134, sign) is True
+assert z.open_member(12379587193847134, sign) == 13
