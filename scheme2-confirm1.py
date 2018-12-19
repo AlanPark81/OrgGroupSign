@@ -25,13 +25,14 @@ z1 = context.power(x, r_chosen, N)
 # To computer x pow r - beta,
 # we should change the exponent from r - beta that is negative to beta - r and get the inverse of it
 # get x pow beta - r
-zx = context.power(x, beta - r_chosen, N)
+zx = context.power(x, context.subtract(beta, r_chosen), N)
 # inverse the result based on a theorem from number theory
 z2 = context.power(zx, N-2, N)
 
 
 assert (context.power(x, r_chosen, N) == z1 or context.power(x, r_chosen, N) == z2)
-assert (context.divmod(context.multiply(context.power(x, beta - r_chosen, N), z2), N)[1] == 1)
+assert (context.divmod(context.multiply(context.power(x, context.subtract(beta, r_chosen), N), z2), N)[1] == 1)
 assert alpha - beta <= c + r_chosen - beta <= alpha + beta
 assert alpha <= c + r_chosen <= alpha + beta + beta
-assert context.divmod(context.multiply(z1, y), N)[1] == context.power(x, context.add(c, r_chosen), N) or context.divmod(context.multiply(z2, y), N)[1] == context.power(x, context.add(c, r_chosen), N)
+assert context.divmod(context.multiply(z1, y), N)[1] == context.power(x, context.add(c, r_chosen), N)
+assert context.divmod(context.multiply(z2, y), N)[1] == context.power(x, context.subtract(context.add(c, r_chosen), beta), N)
