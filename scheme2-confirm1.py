@@ -1,38 +1,43 @@
 from decimal import *
 from Crypto.Util import number
-from Crypto import Random
-import os, math
+
+
+def mod_pow(a, b, mod):
+    if b > 0:
+        return context.power(a, b, mod)
+    else:
+        # inverse the result based on a theorem from number theory
+        sub_result = context.power(a, context.minus(b), mod)
+        return context.power(sub_result, mod - 2, mod)
+
+
+def mod_mul(a, b, mod):
+    return context.divmod(context.multiply(a, b), mod)[1]
+
 
 context = Context(prec=MAX_PREC)
 
 N = number.getPrime(1024)
-
 alpha = number.getRandomInteger(1024)
 beta = number.getRandomInteger(1024)
 
 c = number.getRandomRange(alpha, alpha + beta + 1)
-
 r_chosen = Decimal(number.getRandomRange(0, beta + 1))
 
 x = number.getRandomInteger(1024)
-y = context.power(x, c, N)
-z1 = z2 = 1
+y = mod_pow(x, c, N)
+
 
 cnt = 0
 
-z1 = context.power(x, r_chosen, N)
-
-# To computer x pow r - beta,
-# we should change the exponent from r - beta that is negative to beta - r and get the inverse of it
-# get x pow beta - r
-zx = context.power(x, context.subtract(beta, r_chosen), N)
-# inverse the result based on a theorem from number theory
-z2 = context.power(zx, N-2, N)
+z1 = mod_pow(x, r_chosen, N)
+z2 = mod_pow(x, context.subtract(r_chosen, beta), N)
 
 
-assert (context.power(x, r_chosen, N) == z1 or context.power(x, r_chosen, N) == z2)
-assert (context.divmod(context.multiply(context.power(x, context.subtract(beta, r_chosen), N), z2), N)[1] == 1)
+assert mod_pow(x, r_chosen, N) == z1 or mod_pow(x, r_chosen, N) == z2
+assert mod_pow(x, context.subtract(r_chosen, beta), N) == z2
 assert alpha - beta <= c + r_chosen - beta <= alpha + beta
 assert alpha <= c + r_chosen <= alpha + beta + beta
-assert context.divmod(context.multiply(z1, y), N)[1] == context.power(x, context.add(c, r_chosen), N)
-assert context.divmod(context.multiply(z2, y), N)[1] == context.power(x, context.subtract(context.add(c, r_chosen), beta), N)
+assert mod_mul(z1, y, N) == mod_pow(x, context.add(c, r_chosen), N)
+rx = context.subtract(context.add(c, r_chosen), beta)
+assert mod_mul(z2, y, N) == mod_pow(x, rx, N)
